@@ -1,10 +1,10 @@
 package com.api.rest.empleado;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,17 +34,29 @@ public class EmpleadoController {
     }
 
     @GetMapping("/get/employee/by/{id}")
-    public Optional<Empleado> getByIdEmployee(@PathVariable("id") long id) {
-        return empleadoService.getEmpleadoById(id);
+    public ResponseEntity<Empleado> getByIdEmployee(@PathVariable("id") long id) {
+        return empleadoService.getEmpleadoById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/update/employee")
-    public Empleado updateEmployee(@RequestBody Empleado e) {
-        return empleadoService.updateEmpleado(e);
+    @PutMapping("/update/employee/{id}")
+    public ResponseEntity<Empleado> updateEmployee(@PathVariable("id") long id, @RequestBody Empleado e) {
+        return empleadoService.getEmpleadoById(id)
+                .map(empleadoSaved -> {
+                    empleadoSaved.setNombre(e.getNombre());
+                    empleadoSaved.setApellido(e.getApellido());
+                    empleadoSaved.setEmail(e.getEmail());
+
+                    Empleado emp = empleadoService.updateEmpleado(empleadoSaved);
+                    return new ResponseEntity<>(emp, HttpStatus.OK);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/delete/employee")
-    public void deleteEmployee() {
-        
+    @DeleteMapping("/delete/employee/{id}")
+    public ResponseEntity<String> deleteEmployee(@PathVariable("id") long id) {
+        empleadoService.deleteEmpleado(id);
+        return new ResponseEntity<String>("Empleado eliminado exitosamente", HttpStatus.OK);
     }
 }
