@@ -3,6 +3,7 @@ package com.api.rest.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -101,7 +102,18 @@ public class EmpleadoRepositoryTest {
             assertThat(empUpdated.getApellido()).isEqualTo("Mera");
         }
 
+        @Test
+        @DisplayName("Test para eliminar un employee")
+        public void testDeleteEmployee() {
+            empleadoRepository.save(e);
 
+            // when
+            empleadoRepository.deleteById(e.getId());
+            Optional<Empleado> empOptional = empleadoRepository.findById(e.getId());
+
+            // then
+            assertThat(empOptional).isEmpty();
+        }
 
     
 }
